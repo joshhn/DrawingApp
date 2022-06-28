@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private var drawingView: DrawingView? = null
     private var mImageButtonCurrentPaint: ImageButton? = null
+    var customProgressDialog: Dialog? = null
 
     val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
@@ -53,8 +54,6 @@ class MainActivity : AppCompatActivity() {
 
                     val pickIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                     openGalleryLauncher.launch(pickIntent)
-
-
 
                 }else{
                     if(permissionName == Manifest.permission.READ_EXTERNAL_STORAGE) {
@@ -102,6 +101,7 @@ class MainActivity : AppCompatActivity() {
         val ibSave: ImageButton = findViewById(R.id.ibSave)
         ibSave.setOnClickListener {
             if(isReadStorageAllowed()){
+                showProgressDialog()
                 lifecycleScope.launch{
                     val flDrawingView: FrameLayout = findViewById(R.id.flDrawingViewContainer)
                     saveBitmapFile(getBitmapFromView(flDrawingView))
@@ -218,6 +218,7 @@ class MainActivity : AppCompatActivity() {
                     result = f.absolutePath
 
                     runOnUiThread{
+                        cancelProgressDialog()
                         if(result.isNotEmpty()){
                             Toast.makeText(this@MainActivity,
                             "File saved successfully :$result",Toast.LENGTH_LONG).show()
@@ -233,7 +234,19 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
         return result
+    }
+
+    private fun showProgressDialog(){
+        customProgressDialog = Dialog(this@MainActivity)
+        customProgressDialog?.setContentView(R.layout.dialog_custom_progress)
+        customProgressDialog?.show()
+    }
+
+    private fun cancelProgressDialog(){
+        if(customProgressDialog!=null){
+            customProgressDialog?.dismiss()
+            customProgressDialog = null
+        }
     }
 }
